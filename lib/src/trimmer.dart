@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit_config.dart';
 import 'package:ffmpeg_kit_flutter/return_code.dart';
-import 'package:path/path.dart';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'utils/file_formats.dart';
@@ -252,7 +252,7 @@ class Trimmer {
 
       debugPrint("FFmpeg process exited with state $state and rc $returnCode");
 
-      if (ReturnCode.isSuccess(returnCode)) {
+      if (ReturnCode.isCancel(returnCode) == false) {
         debugPrint("FFmpeg processing completed successfully.");
         debugPrint('Audio successfully saved');
         onSave(outputPath);
