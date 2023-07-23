@@ -261,7 +261,9 @@ class Trimmer {
         debugPrint('Couldn\'t save the audio');
         onSave(null);
       }
-    });
+    },(log) {
+      debugPrint("trim_logger:  ${log.getMessage()}") ;
+    },);
 
     // return _outputPath;
   }
