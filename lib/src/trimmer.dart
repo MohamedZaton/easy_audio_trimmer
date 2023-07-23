@@ -164,7 +164,7 @@ class Trimmer {
   /// audio format is passed in [customAudioFormat], then the app may
   /// crash.
   ///
-  Future<void> saveTrimmedAudio({
+  Future<String> saveTrimmedAudio({
     required double startValue,
     required double endValue,
     required Function(String? outputPath) onSave,
@@ -179,7 +179,7 @@ class Trimmer {
     StorageDir? storageDir,
   }) async {
     final String audioPath = currentAudioFile!.path;
-    final String audioName = basename(audioPath).split('.')[0];
+
 
     String command;
 
@@ -191,81 +191,12 @@ class Trimmer {
         .toString();
 
     // String _resultString;
-    String outputPath;
-    String? outputFormatString;
-    String formattedDateTime = dateTime.replaceAll(' ', '');
-
-    debugPrint("DateTime: $dateTime");
-    debugPrint("Formatted: $formattedDateTime");
-
-    audioFolderName ??= "Trimmer";
-
-    audioFileName ??= "${audioName}_trimmed:$formattedDateTime";
-
-    audioFileName = audioFileName.replaceAll(' ', '_');
-
-    String path = await _createFolderInAppDocDir(
-      audioFolderName,
-      storageDir,
-    ).whenComplete(
-      () => debugPrint("Retrieved Trimmer folder"),
-    );
-
-    Duration startPoint = Duration(milliseconds: startValue.toInt());
-    Duration endPoint = Duration(milliseconds: endValue.toInt());
 
     // Checking the start and end point strings
-    debugPrint("Start: ${startPoint.toString()} & End: ${endPoint.toString()}");
+    debugPrint("Start: ${startValue.toString()} & End: ${endValue.toString()}");
 
-    debugPrint(path);
-
-    if (outputFormat == null) {
-      outputFormat = FileFormat.mp3;
-      outputFormatString = outputFormat.toString();
-      debugPrint('OUTPUT: $outputFormatString');
-    } else {
-      outputFormatString = outputFormat.toString();
-    }
-
-    String trimLengthCommand =
-        ' -ss $startPoint -i "$audioPath" -t ${endPoint - startPoint}';
-
-    if (ffmpegCommand == null) {
-      command = '$trimLengthCommand -c:a -acodec libmp3lame ';
-
-      if (!applyAudioEncoding) {
-        command += '-c:v copy ';
-      }
-    } else {
-      command = '$trimLengthCommand $ffmpegCommand ';
-      outputFormatString = customAudioFormat;
-    }
-
-    outputPath = '$path$audioFileName$outputFormatString';
-
-    command += '"$outputPath"';
-
-    FFmpegKit.executeAsync(command, (session) async {
-      final state =
-          FFmpegKitConfig.sessionStateToString(await session.getState());
-      final returnCode = await session.getReturnCode();
-
-      debugPrint("FFmpeg process exited with state $state and rc $returnCode");
-
-      if (ReturnCode.isCancel(returnCode) == false) {
-        debugPrint("FFmpeg processing completed successfully.");
-        debugPrint('Audio successfully saved');
-        onSave(outputPath);
-      } else {
-        debugPrint("FFmpeg processing failed.");
-        debugPrint('Couldn\'t save the audio');
-        onSave(null);
-      }
-    },(log) {
-      debugPrint("trim_logger:  ${log.getMessage()}") ;
-    },);
-
-    // return _outputPath;
+   String outPath = await  AudioCutter.cutAudio(audioPath, startValue, endValue) ;
+     return outPath;
   }
 
   /// For getting the audio controller state, to know whether the
@@ -301,5 +232,43 @@ class Trimmer {
   /// Clean up
   void dispose() {
     _controller.close();
+  }
+}
+class AudioCutter {
+  /// Return audio file path after cutting
+  static Future<String> cutAudio(String path, double start, double end) async {
+    if (start < 0 || end < 0) {
+      throw ArgumentError('The starting and ending points cannot be negative');
+    }
+    if (start > end) {
+      throw ArgumentError(
+          'The starting point cannot be greater than the ending point');
+    }
+
+    final Directory dir = await getTemporaryDirectory();
+    final outPath = "${dir.path}/audio_cutter/output.mp3";
+    await File(outPath).create(recursive: true);
+
+    var cmd =
+        "-y -i \"$path\" -vn -ss $start -to $end -ar 16k -ac 2 -b:a 96k -acodec copy $outPath";
+    await FFmpegKit.executeAsync(cmd, (session) async {
+      final state =
+      FFmpegKitConfig.sessionStateToString(await session.getState());
+      final returnCode = await session.getReturnCode();
+
+      debugPrint("FFmpeg process exited with state $state and rc $returnCode");
+
+      if (ReturnCode.isCancel(returnCode) == false) {
+        debugPrint("FFmpeg processing completed successfully.");
+        debugPrint('Audio successfully saved');
+      } else {
+        debugPrint("FFmpeg processing failed.");
+        debugPrint('Couldn\'t save the audio');
+      }
+    },(log) {
+      debugPrint("trim_logger:  ${log.getMessage()}") ;
+    },);
+
+    return outPath;
   }
 }
