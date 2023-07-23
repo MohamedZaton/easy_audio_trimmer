@@ -176,12 +176,12 @@ class Trimmer {
     int? scaleGIF,
     String? audioFolderName,
     String? audioFileName,
+    required String outputPath,
     StorageDir? storageDir,
   }) async {
     final String audioPath = currentAudioFile!.path;
-    final String audioName = basename(audioPath).split('.')[0];
 
-    String command;
+
 
     // Formatting Date and Time
     String dateTime = DateFormat.yMMMd()
@@ -191,33 +191,20 @@ class Trimmer {
         .toString();
 
     // String _resultString;
-    String outputPath;
+
     String? outputFormatString;
     String formattedDateTime = dateTime.replaceAll(' ', '');
 
     debugPrint("DateTime: $dateTime");
     debugPrint("Formatted: $formattedDateTime");
 
-    audioFolderName ??= "Trimmer";
 
-    audioFileName ??= "${audioName}_trimmed:$formattedDateTime";
-
-    audioFileName = audioFileName.replaceAll(' ', '_');
-
-    String path = await _createFolderInAppDocDir(
-      audioFolderName,
-      storageDir,
-    ).whenComplete(
-      () => debugPrint("Retrieved Trimmer folder"),
-    );
-
-    Duration startPoint = Duration(milliseconds: startValue.toInt());
-    Duration endPoint = Duration(milliseconds: endValue.toInt());
+    String startPoint = _durationToString(Duration(milliseconds: startValue.toInt()));
+    String  endPoint = _durationToString(Duration(milliseconds: endValue.toInt()));
 
     // Checking the start and end point strings
-    debugPrint("Start: ${startPoint.toString()} & End: ${endPoint.toString()}");
+    debugPrint("Start: $startPoint  & End: $endPoint ");
 
-    debugPrint(path);
 
     if (outputFormat == null) {
       outputFormat = FileFormat.mp3;
@@ -227,24 +214,13 @@ class Trimmer {
       outputFormatString = outputFormat.toString();
     }
 
-    String trimLengthCommand =
-        ' -ss $startPoint -i "$audioPath" -t ${endPoint - startPoint}';
 
-    if (ffmpegCommand == null) {
-      command = '$trimLengthCommand -c:a copy ';
 
-      if (!applyAudioEncoding) {
-        command += '-c:v copy ';
-      }
-    } else {
-      command = '$trimLengthCommand $ffmpegCommand ';
-      outputFormatString = customAudioFormat;
-    }
 
-    outputPath = '$path$audioFileName$outputFormatString';
+    // ffmpeg -i output.mp3 -ss 00:00:02 -to 00:00:15 -c copy trim.mp3
 
-    command += '"$outputPath"';
-    var cmd = "-y -i \"$audioPath\" -vn -ss $startPoint -to $audioPath -ar 16k -ac 2 -b:a 96k -acodec copy $outputPath";
+    String cmd = "-i $audioPath -ss $startPoint -to $endPoint -c copy $outputPath";
+    debugPrint("trim_cmd : $cmd") ;
 
     FFmpegKit.executeAsync(cmd, (session) async {
       final state =
@@ -303,5 +279,22 @@ class Trimmer {
   /// Clean up
   void dispose() {
     _controller.close();
+  }
+
+  String twoDigits(int n) {
+    if (n >= 10) return "$n";
+    return "0$n";
+  }
+
+  String _durationToString(Duration duration) {
+
+
+
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+    if (duration.inHours > 0)
+      return "${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
+    else
+      return "$twoDigitMinutes:$twoDigitSeconds";
   }
 }
