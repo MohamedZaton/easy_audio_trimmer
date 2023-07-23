@@ -219,7 +219,7 @@ class Trimmer {
 
     // ffmpeg -i output.mp3 -ss 00:00:02 -to 00:00:15 -c copy trim.mp3
 
-    String cmd = "-i $audioPath -ss $startPoint -to $endPoint -ar 16k -ac 2 -b:a 96k -acodec libmp3lame $outputPath";
+    String cmd = "-i $audioPath -ss $startPoint -to $endPoint -ar 16k -ac 2 -b:a 96k -acodec copy $outputPath";
     debugPrint("trim_cmd : $cmd") ;
 
     FFmpegKit.executeAsync(cmd, (session) async {
