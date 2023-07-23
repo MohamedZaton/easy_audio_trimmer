@@ -295,6 +295,6 @@ class Trimmer {
     if (duration.inHours > 0)
       return "${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
     else
-      return "$twoDigitMinutes:$twoDigitSeconds";
+      return "00:$twoDigitMinutes:$twoDigitSeconds";
   }
 }
