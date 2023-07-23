@@ -195,7 +195,7 @@ class Trimmer {
     // Checking the start and end point strings
     debugPrint("Start: ${startValue.toString()} & End: ${endValue.toString()}");
 
-   String outPath = await  AudioCutter.cutAudio(audioPath, startValue, endValue) ;
+   String outPath = await  AudioCutter.cutAudio(audioPath, 0.0, 5.7) ;
      return outPath;
   }
 
