@@ -47,6 +47,7 @@ class _AudioTrimmerViewState extends State<AudioTrimmerView> {
       endValue: _endValue,
       outputFormat: FileFormat.mp3,
       audioFileName: DateTime.now().millisecondsSinceEpoch.toString(),
+      outputPath: '',
       onSave: (outputPath) {
         setState(() {
           _progressVisibility = false;
