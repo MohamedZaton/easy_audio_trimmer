@@ -244,15 +244,16 @@ class Trimmer {
     outputPath = '$path$audioFileName$outputFormatString';
 
     command += '"$outputPath"';
+    var cmd = "-y -i \"$audioPath\" -vn -ss $startPoint -to $audioPath -ar 16k -ac 2 -b:a 96k -acodec copy $outputPath";
 
-    FFmpegKit.executeAsync(command, (session) async {
+    FFmpegKit.executeAsync(cmd, (session) async {
       final state =
           FFmpegKitConfig.sessionStateToString(await session.getState());
       final returnCode = await session.getReturnCode();
 
       debugPrint("FFmpeg process exited with state $state and rc $returnCode");
 
-      if (ReturnCode.isCancel(returnCode) == false) {
+      if (ReturnCode.isSuccess(returnCode) == true) {
         debugPrint("FFmpeg processing completed successfully.");
         debugPrint('Audio successfully saved');
         onSave(outputPath);
@@ -261,7 +262,10 @@ class Trimmer {
         debugPrint('Couldn\'t save the audio');
         onSave(null);
       }
-    });
+
+    },(log) {
+      debugPrint("trim_logger:  ${log.getMessage()}") ;
+    },);
 
     // return _outputPath;
   }

@@ -45,6 +45,7 @@ class _AudioTrimmerViewState extends State<AudioTrimmerView> {
     _trimmer.saveTrimmedAudio(
       startValue: _startValue,
       endValue: _endValue,
+      outputFormat: FileFormat.mp3,
       audioFileName: DateTime.now().millisecondsSinceEpoch.toString(),
       onSave: (outputPath) {
         setState(() {
