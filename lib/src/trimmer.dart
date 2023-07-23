@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:audioplayers/audioplayers.dart';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit_config.dart';
 import 'package:ffmpeg_kit_flutter/return_code.dart';
+import 'package:path/path.dart';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'utils/file_formats.dart';
@@ -25,7 +25,7 @@ class Trimmer {
   // final FlutterFFmpeg _flutterFFmpeg = FFmpegKit();
 
   final StreamController<TrimmerEvent> _controller =
-      StreamController<TrimmerEvent>.broadcast();
+  StreamController<TrimmerEvent>.broadcast();
 
   AudioPlayer? _audioPlayer;
 
@@ -54,9 +54,9 @@ class Trimmer {
   }
 
   Future<String> _createFolderInAppDocDir(
-    String folderName,
-    StorageDir? storageDir,
-  ) async {
+      String folderName,
+      StorageDir? storageDir,
+      ) async {
     Directory? directory;
 
     if (storageDir == null) {
@@ -79,7 +79,7 @@ class Trimmer {
 
     // Directory + folder name
     final Directory directoryFolder =
-        Directory('${directory!.path}/$folderName/');
+    Directory('${directory!.path}/$folderName/');
 
     if (await directoryFolder.exists()) {
       // If folder already exists return path
@@ -89,7 +89,7 @@ class Trimmer {
       debugPrint('Creating');
       // If folder does not exists create folder and then return its path
       final Directory directoryNewFolder =
-          await directoryFolder.create(recursive: true);
+      await directoryFolder.create(recursive: true);
       return directoryNewFolder.path;
     }
   }
@@ -208,7 +208,7 @@ class Trimmer {
       audioFolderName,
       storageDir,
     ).whenComplete(
-      () => debugPrint("Retrieved Trimmer folder"),
+          () => debugPrint("Retrieved Trimmer folder"),
     );
 
     Duration startPoint = Duration(milliseconds: startValue.toInt());
@@ -247,12 +247,12 @@ class Trimmer {
 
     FFmpegKit.executeAsync(command, (session) async {
       final state =
-          FFmpegKitConfig.sessionStateToString(await session.getState());
+      FFmpegKitConfig.sessionStateToString(await session.getState());
       final returnCode = await session.getReturnCode();
 
       debugPrint("FFmpeg process exited with state $state and rc $returnCode");
 
-      if (ReturnCode.isCancel(returnCode) == false) {
+      if (ReturnCode.isSuccess(returnCode)) {
         debugPrint("FFmpeg processing completed successfully.");
         debugPrint('Audio successfully saved');
         onSave(outputPath);
