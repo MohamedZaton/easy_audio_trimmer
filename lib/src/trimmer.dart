@@ -231,7 +231,7 @@ class Trimmer {
         ' -ss $startPoint -i "$audioPath" -t ${endPoint - startPoint}';
 
     if (ffmpegCommand == null) {
-      command = '$trimLengthCommand -c:a copy ';
+      command = '$trimLengthCommand -c:a -acodec libmp3lame ';
 
       if (!applyAudioEncoding) {
         command += '-c:v copy ';
