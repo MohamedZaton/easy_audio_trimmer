@@ -231,7 +231,7 @@ class Trimmer {
         ' -ss $startPoint -i "$audioPath" -t ${endPoint - startPoint}';
 
     if (ffmpegCommand == null) {
-      command = '$trimLengthCommand -c:a copy ';
+      command = '$trimLengthCommand -c:a  copy ';
 
       if (!applyAudioEncoding) {
         command += '-c:v copy ';
@@ -244,6 +244,7 @@ class Trimmer {
     outputPath = '$path$audioFileName$outputFormatString';
 
     command += '"$outputPath"';
+    debugPrint("command: $command") ;
 
     FFmpegKit.executeAsync(command, (session) async {
       final state =
